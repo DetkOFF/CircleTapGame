@@ -30,11 +30,11 @@ public class PlayerMoving : MonoBehaviour
         StartPosition = transform.position;
     }
 
-    private void FixedUpdate()
+    private void Update()
     {
         if (IsGamePaused) return;
         //Rotation
-        transform.RotateAround(centerPoint, Vector3.back, (rotationSpeed+(int)Difficulty*20)*Time.fixedDeltaTime*rotationDirection);
+        transform.RotateAround(centerPoint, Vector3.back, (rotationSpeed+(int)Difficulty*20)*Time.deltaTime*rotationDirection);
         
         //Input
         //Input_ChangeDirection();

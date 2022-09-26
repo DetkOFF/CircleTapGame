@@ -48,8 +48,14 @@ public class GameManager : MonoBehaviour
         UpdateScoreTMP();
         playerMoving.transform.position = playerMoving.StartPosition;
         exitTransform.rotation = new Quaternion(0, 0, 0, 0);
-        playerMoving.IsGamePaused = false;
         playerMoving.Difficulty = 0f;
+        StartCoroutine(DisablePause());
+    }
+
+    private IEnumerator DisablePause()
+    {
+        yield return new WaitForSeconds(0.1f);
+        playerMoving.IsGamePaused = false;
     }
 
     public void AddScore(int _amount)
