@@ -19,8 +19,7 @@ public class PlayerMoving : MonoBehaviour
     private bool isTouching = false;
     private bool gotPoint = false;
     private PlayerState playerState;
-    [SerializeField] private int maxDifficulty = 6;
-    public float Difficulty = 0f;
+    public int Difficulty = 0;
     public bool IsGamePaused = true;
 
     public Vector3 StartPosition = new Vector3(0,0,0);
@@ -38,7 +37,7 @@ public class PlayerMoving : MonoBehaviour
         
         //Input
         //Input_ChangeDirection();
-        if (Input_Touch())
+        /*if (Input_Touch())
         {
             switch (playerState)
             {
@@ -57,11 +56,31 @@ public class PlayerMoving : MonoBehaviour
                     gameManager.GameOver(); 
                     break;
             }
-        }
+        }*/
         
     }
 
-    private bool Input_Touch()
+    public void Tap_Input()
+    {
+        switch (playerState)
+        {
+            case PlayerState.Field:
+                gameManager.GameOver();
+                break;
+            case PlayerState.Exit:
+                if (gotPoint) break;
+                gameManager.AddScore(1);
+                rotationDirection *= -1;
+                gotPoint = true;
+                
+                break;
+            default: 
+                gameManager.GameOver(); 
+                break;
+        }
+    }
+    
+    /*private bool Input_Touch()
     {
         if (Input.touchCount > 0 && !isTouching)
         {
@@ -72,12 +91,12 @@ public class PlayerMoving : MonoBehaviour
             return true;
         }
         return (false);
-    }
-    private void Input_ChangeDirection()
+    }*/
+    /*private void Input_ChangeDirection()
     {
         if (Input_Touch())
             rotationDirection *= -1;
-    }
+    }*/
     private IEnumerator TouchWait()
     {
         yield return new WaitForSeconds(0.2f);
@@ -99,6 +118,7 @@ public class PlayerMoving : MonoBehaviour
         switch (_other.tag)
         {
             case "Exit":
+                if(IsGamePaused) break;
                 playerState = PlayerState.Field;
                 if (!gotPoint)
                     gameManager.GameOver();
