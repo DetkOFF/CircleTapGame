@@ -10,13 +10,26 @@ public enum PlayerState
     Exit
 }
 
+public enum PlayerNumber
+{
+    Player1,
+    Player2
+}
+
 public class PlayerMoving : MonoBehaviour
 {
     [SerializeField] private GameManager gameManager;
     [SerializeField] private Vector2 centerPoint;
     [SerializeField] private float rotationSpeed = 5f; //degrees per second
-    [SerializeField] private int rotationDirection = 1;
-    private bool isTouching = false;
+    [SerializeField] public int RotationDirection = 1;
+
+    [SerializeField] private string exitTag;
+    [SerializeField] private PlayerNumber playerNumber;
+
+    [SerializeField] private bool godMode = false; 
+    
+    //private const string exitTagPlayer1 = "Exit_Player1";
+    //private const string exitTagPlayer2 = "Exit_Player2";
     private bool gotPoint = false;
     private PlayerState playerState;
     public int Difficulty = 0;
@@ -33,7 +46,7 @@ public class PlayerMoving : MonoBehaviour
     {
         if (IsGamePaused) return;
         //Rotation
-        transform.RotateAround(centerPoint, Vector3.back, (rotationSpeed+(int)Difficulty*20)*Time.deltaTime*rotationDirection);
+        transform.RotateAround(centerPoint, Vector3.back, (rotationSpeed+(int)Difficulty*20)*Time.deltaTime*RotationDirection);
         
         //Input
         //Input_ChangeDirection();
@@ -62,20 +75,23 @@ public class PlayerMoving : MonoBehaviour
 
     public void Tap_Input()
     {
+        //Debug.Log(playerState);
         switch (playerState)
         {
             case PlayerState.Field:
-                gameManager.GameOver();
+                if(godMode) break;
+                gameManager.GameOver(playerNumber);
                 break;
             case PlayerState.Exit:
                 if (gotPoint) break;
-                gameManager.AddScore(1);
-                rotationDirection *= -1;
+                gameManager.AddScore(1, playerNumber);
+                RotationDirection *= -1;
                 gotPoint = true;
                 
                 break;
             default: 
-                gameManager.GameOver(); 
+                if(godMode) break;
+                gameManager.GameOver(playerNumber); 
                 break;
         }
     }
@@ -97,25 +113,22 @@ public class PlayerMoving : MonoBehaviour
         if (Input_Touch())
             rotationDirection *= -1;
     }*/
-    private IEnumerator TouchWait()
-    {
-        yield return new WaitForSeconds(0.2f);
-        isTouching = false;
-    }
-
     private void OnTriggerEnter2D(Collider2D _other)
     {
-        switch (_other.tag)
+        /*switch (_other.tag)
         {
-            case "Exit":
+            
+            case exitTag:
                 playerState = PlayerState.Exit;
                 break;
             default: break;
-        }
+        }*/
+        if (_other.CompareTag(exitTag))
+            playerState = PlayerState.Exit;
     }
     private void OnTriggerExit2D(Collider2D _other)
     {
-        switch (_other.tag)
+        /*switch (_other.tag)
         {
             case "Exit":
                 if(IsGamePaused) break;
@@ -125,6 +138,13 @@ public class PlayerMoving : MonoBehaviour
                 else gotPoint = false;
                 break;
             default: break;
+        }*/
+        if (_other.CompareTag(exitTag) && !IsGamePaused)
+        {
+            playerState = PlayerState.Field;
+            if (!gotPoint && !godMode)
+                gameManager.GameOver(playerNumber);
+            else gotPoint = false;
         }
     }
 }
