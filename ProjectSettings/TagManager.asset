@@ -4,7 +4,8 @@
 TagManager:
   serializedVersion: 2
   tags:
-  - Exit
+  - Exit_Player2
+  - Exit_Player1
   layers:
   - Default
   - TransparentFX
