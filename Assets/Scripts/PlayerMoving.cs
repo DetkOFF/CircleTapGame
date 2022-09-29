@@ -75,6 +75,8 @@ public class PlayerMoving : MonoBehaviour
 
     public void Tap_Input()
     {
+        if(IsGamePaused)
+            return;
         //Debug.Log(playerState);
         switch (playerState)
         {
@@ -115,31 +117,16 @@ public class PlayerMoving : MonoBehaviour
     }*/
     private void OnTriggerEnter2D(Collider2D _other)
     {
-        /*switch (_other.tag)
-        {
-            
-            case exitTag:
-                playerState = PlayerState.Exit;
-                break;
-            default: break;
-        }*/
+        if(IsGamePaused)
+            return;
         if (_other.CompareTag(exitTag))
             playerState = PlayerState.Exit;
     }
     private void OnTriggerExit2D(Collider2D _other)
     {
-        /*switch (_other.tag)
-        {
-            case "Exit":
-                if(IsGamePaused) break;
-                playerState = PlayerState.Field;
-                if (!gotPoint)
-                    gameManager.GameOver();
-                else gotPoint = false;
-                break;
-            default: break;
-        }*/
-        if (_other.CompareTag(exitTag) && !IsGamePaused)
+        if(IsGamePaused)
+            return;
+        if (_other.CompareTag(exitTag))
         {
             playerState = PlayerState.Field;
             if (!gotPoint && !godMode)
