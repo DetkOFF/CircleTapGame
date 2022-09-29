@@ -7,6 +7,7 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 using NaughtyAttributes;
+using Unity.VisualScripting;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 
@@ -49,11 +50,19 @@ public class GameManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI player1ScoreTMP;
     [SerializeField] private TextMeshProUGUI player2ScoreTMP;
     private bool onePlayerLeft = false;
+    [SerializeField] private RectTransform scoreLine;
+
+    [SerializeField] private RectTransform btnBorderPlayer2;
+    //Sound
+    [SerializeField] private SoundManager soundManager; 
+    //Guide
+    [SerializeField] private RectTransform guidePanel;
     private void Start()
     {
         Load();
         //btnPanel.gameObject;
         //OpenBTNPanel();
+        guidePanel.gameObject.SetActive(false);
         currentScore = 0;
         UpdateScoreTMP();
         UpdateMaxScoreTMP();
@@ -63,6 +72,8 @@ public class GameManager : MonoBehaviour
         gameMode = GameMode.SinglePlayer;
         SetSinglePlayerMode();
         ChangeLevelColors();
+        playerMovingsArray[0].IsGamePaused = true;
+        
     }
 
     private void CloseBTNPanel()
@@ -103,7 +114,24 @@ public class GameManager : MonoBehaviour
         if(gameMode == GameMode.SinglePlayer)
             SetMultiplayerMode();
         SetStartValues();
+        scoreLine.LeanSize(new Vector2(300,16), 0.3f).setEaseOutCubic();
+        btnBorderPlayer2.gameObject.SetActive(true);
+        btnBorderPlayer2.LeanMove(new Vector3(0, -470, 0), 0.3f).setEaseOutCubic();
+        
+        
+        //StartCoroutine(ScoreLineReturnSize());
         CloseBTNPanel();
+        
+        
+    }
+
+    private IEnumerator ScoreLineReturnSize()
+    {
+        //yield return new WaitForSeconds(1.5f);
+        scoreLine.LeanSize(new Vector2(175,16), 0.3f).setEaseOutCubic();
+        btnBorderPlayer2.LeanMove(new Vector3(0, 470, 0), 0.3f).setEaseOutCubic();
+        yield return new WaitForSeconds(0.5f);
+        btnBorderPlayer2.gameObject.SetActive(false);
     }
     
     [Button("ResetPlayerPref")]
@@ -127,7 +155,22 @@ public class GameManager : MonoBehaviour
             SetSinglePlayerMode();
         SetStartValues();
         CloseBTNPanel();
+        if (!PlayerPrefs.HasKey("FirstLaunch"))
+        {
+            PlayerPrefs.SetInt("FirstLaunch", 0);
+            guidePanel.gameObject.SetActive(true);
+            guidePanel.LeanMove(new Vector3(0, -140, 0), 0.5f).setEaseOutCubic();
+            StartCoroutine(GuideClose());
+        }
     }
+    private IEnumerator GuideClose()
+    {
+        yield return new WaitForSeconds(4.5f);
+        guidePanel.LeanMove(new Vector3(0, 250, 0), 0.5f).setEaseOutCubic();
+        yield return new WaitForSeconds(0.5f);
+        guidePanel.gameObject.SetActive(false);
+    }
+    
     
     private void SetStartValues()
     {
@@ -194,6 +237,7 @@ public class GameManager : MonoBehaviour
 
     public void AddScore(int _amount, PlayerNumber _playerNumber)
     {
+        soundManager.PlayScoreSound();
         if (gameMode == GameMode.SinglePlayer)
         {
             currentScore += _amount;
@@ -242,6 +286,7 @@ public class GameManager : MonoBehaviour
 
     public void GameOver(PlayerNumber _playerNumber)
     {
+        soundManager.PlayGameOverSound();
         if (gameMode == GameMode.SinglePlayer)
         {
             //Debug.Log("GameOver");
@@ -249,7 +294,7 @@ public class GameManager : MonoBehaviour
             {
                 playerMoving.IsGamePaused = true;
             }
-
+            StartCoroutine(ScoreLineReturnSize());
             OpenBTNPanel();
             gameStatusTMP.text = "Game Over :((";
             if (currentScore > maxScore)
@@ -271,6 +316,7 @@ public class GameManager : MonoBehaviour
                 {
                     playerMoving.IsGamePaused = true;
                 }
+                StartCoroutine(ScoreLineReturnSize());
                 OpenBTNPanel();
                 if (currentScore > player2CurrentScore)
                     gameStatusTMP.text = "Player 1 win!";
@@ -290,6 +336,7 @@ public class GameManager : MonoBehaviour
                     {
                         playerMoving.IsGamePaused = true;
                     }
+                    StartCoroutine(ScoreLineReturnSize());
                     OpenBTNPanel();
                     gameStatusTMP.text = "Player 2 win!";
                     break;
@@ -302,6 +349,7 @@ public class GameManager : MonoBehaviour
                     {
                         playerMoving.IsGamePaused = true;
                     }
+                    StartCoroutine(ScoreLineReturnSize());
                     OpenBTNPanel();
                     gameStatusTMP.text = "Player 1 win!";
                     break;
